@@ -16,7 +16,7 @@ jobs:
           export LC_ALL=C
           echo "Исправляем названия файлов и пути SDK..."
           
-          # 1. Переименовываем файлы
+          # 1. Переименовываем файлы из Dolphin-Plus в SHANKS_PUBGM (чтобы старый код Engine.mm работал)
           cd HMOOD/SDK || exit 1
           for file in Dolphin-Plus_*; do
             if [ -f "$file" ]; then
@@ -33,17 +33,36 @@ jobs:
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
-            
-            # 4. Удаляем из проекта ссылки на файлы .cpp, которых нет на диске
-            grep -oE '"[^"]*\.cpp"' "$PROJECT_FILE" | tr -d '"' | sort -u > /tmp/expected_cpps.txt
-            while read -r file; do
-              basename=$(basename "$file")
-              if [ ! -f "HMOOD/SDK/$basename" ]; then
-                echo "Удаляем ссылку на отсутствующий файл: $basename"
-                sed -i '' "/$basename/d" "$PROJECT_FILE"
-              fi
-            done < /tmp/expected_cpps.txt
           fi
+
+      - name: Clean Xcode Project from missing files
+        run: |
+          echo "Очищаем проект от файлов, которых нет в новом SDK..."
+          # Устанавливаем библиотеку для работы с проектами Xcode
+          gem install xcodeproj
+          
+          # Создаем Ruby-скрипт, который удалит отсутствующие файлы
+          cat << 'EOF' > clean_project.rb
+          require 'xcodeproj'
+          
+          # Ищем файл проекта
+          project_path = Dir.glob("**/*.xcodeproj").first
+          if project_path
+            project = Xcodeproj::Project.open(project_path)
+            # Проходим по всем файлам в проекте
+            project.files.each do |file|
+              # Если это код (cpp/hpp) и его нет на диске
+              if file.path && (file.path.end_with?('.cpp') || file.path.end_with?('.hpp')) && !File.exist?(file.real_path)
+                puts "Удаляем ссылку на отсутствующий файл: #{file.path}"
+                file.remove_from_project
+              end
+            end
+            project.save
+          end
+          EOF
+          
+          # Запускаем скрипт
+          ruby clean_project.rb
 
       - name: Find and Build Xcode Project
         run: |
