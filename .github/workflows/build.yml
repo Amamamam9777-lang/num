@@ -1,26 +1,34 @@
-name: Build Dylib
+name: Unzip Project Files
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ main ] # или master, в зависимости от вашей ветки
 
 jobs:
-  build:
-    runs-on: macos-latest
+  unzip:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Разрешение на запись файлов в репозиторий
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Build project
+      
+      - name: Find and Extract ZIP
         run: |
-          cd "HMOOD"
-          SCHEME=$(xcodebuild -list -json | jq -r '.project.schemes[0]')
-          echo "Building scheme: $SCHEME"
-          xcodebuild -project HMOOD_FUCK_MAX.xcodeproj -scheme "$SCHEME" -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO -derivedDataPath ./build
-
-      - name: Upload EVERYTHING
-        uses: actions/upload-artifact@v4
-        with:
-          name: all-build-files
-          # Скачиваем всю папку с результатами сборки
-          path: "FUCK S0N_MX BY HMOOD/build/Build/Products/**"
+          # Ищем первый попавшийся zip-файл
+          ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Zip file not found!"
+            exit 1
+          fi
+          echo "Extracting $ZIP_FILE..."
+          unzip -o "$ZIP_FILE" -d .
+          # Удаляем архив после распаковки (по желанию)
+          rm "$ZIP_FILE"
+      
+      - name: Commit and Push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Auto-unzip project files" || echo "No changes to commit"
+          git push
