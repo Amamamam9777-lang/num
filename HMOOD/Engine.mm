@@ -442,85 +442,42 @@ TUObjectArray gobjects;
 // HMOOD__TG@i_8_f
 UWorld *GetFullWorld() 
 { 
-static uintptr_t gworldDataOffset = 0;
-static uintptr_t gworldFuncOffset = 0;
-static bool offsetsInitialized = false;
+    // Временно отключаем быстрый поиск GWorld через смещения —
+    // они не подходят к VNG 4.7.0 и возвращают мусор.
+    // Оставляем только перебор объектов (медленно, но безопасно).
 
-if (!offsetsInitialized) {
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *BundID = [infoDictionary objectForKey:@"CFBundleIdentifier"];
-
-    if([BundID containsString:@"com.tencent.ig"]) {
-        gworldDataOffset = 0x10B103D80; // Global Data
-        gworldFuncOffset = 0x10223CD4C; // Global Function
-    } else if([BundID containsString:@"vn.vng.pubgmobile"] || [BundID containsString:@"vn"]) {
-        gworldDataOffset = 0x10ACC5880; // VNG Data
-        gworldFuncOffset = 0x101FE9EEC; // VNG Function
-    }
-    offsetsInitialized = true;
-}
-
-if (gworldDataOffset != 0) {
-    UWorld** ppGWorld = (UWorld**)((uintptr_t)Get_module_base() + gworldDataOffset);
-    
-    if (ppGWorld && *ppGWorld) {
-        GEWorld = *ppGWorld; 
-        
-        if (!tslFont) {
-            tslFont = UObject::FindObject<UFont>("Font TSLFont.TSLFont");
-            robotoTinyFont = UObject::FindObject<UFont>("Font RobotoTiny.RobotoTiny");
-            robotoFont = UObject::FindObject<UFont>("Font Roboto.Roboto");
-        }
-        return GEWorld;
-    }
-}
-
-if (gworldFuncOffset != 0) {
-    typedef UWorld* (*GWorldFunc_t)();
-    GWorldFunc_t getWorldFunc = (GWorldFunc_t)((uintptr_t)Get_module_base() + gworldFuncOffset);
-    UWorld* worldFromFunc = getWorldFunc();
-    if (worldFromFunc) {
-        GEWorld = worldFromFunc;
-        if (!tslFont) {
-            tslFont = UObject::FindObject<UFont>("Font TSLFont.TSLFont");
-            robotoTinyFont = UObject::FindObject<UFont>("Font RobotoTiny.RobotoTiny");
-            robotoFont = UObject::FindObject<UFont>("Font Roboto.Roboto");
-        }
-        return worldFromFunc;
-    }
-}
-
-if(GWorldNum == 0) {
-    gobjects = UObject::GUObjectArray->ObjObjects;
-    for (int i=0; i< gobjects.Num(); i++) {
-        if (auto obj = gobjects.GetByIndex(i)) {
-            if(obj->IsA(UEngine::StaticClass())) {
-                auto GEngine = (UEngine *) obj;
-                if(GEngine) {
-                    tslFont = GEngine->MediumFont;
-                    robotoTinyFont = GEngine->MediumFont;
-                    robotoFont = GEngine->MediumFont;
-                    auto ViewPort = GEngine->GameViewport;
-                    if (ViewPort) {
-                        GEWorld = ViewPort->World;
-                        GWorldNum = i;
-                        return ViewPort->World;
+    if(GWorldNum == 0) {
+        gobjects = UObject::GUObjectArray->ObjObjects;
+        for (int i = 0; i < gobjects.Num(); i++) {
+            if (auto obj = gobjects.GetByIndex(i)) {
+                if(obj->IsA(UEngine::StaticClass())) {
+                    auto GEngine = (UEngine *) obj;
+                    if(GEngine) {
+                        tslFont = GEngine->MediumFont;
+                        robotoTinyFont = GEngine->MediumFont;
+                        robotoFont = GEngine->MediumFont;
+                        auto ViewPort = GEngine->GameViewport;
+                        if (ViewPort) {
+                            GEWorld = ViewPort->World;
+                            GWorldNum = i;
+                            NSLog(@"[HMOOD] GWorld найден через перебор, index=%d, ptr=%p", i, (void*)GEWorld);
+                            return ViewPort->World;
+                        }
                     }
                 }
             }
         }
-    }
-} else {
-    auto GEngine = (UEngine *) (gobjects.GetByIndex(GWorldNum));
-    if(GEngine) {
-        auto ViewPort = GEngine->GameViewport;
-        if(ViewPort) {
-            GEWorld = ViewPort->World;
-            return ViewPort->World;
+    } else {
+        auto GEngine = (UEngine *) (gobjects.GetByIndex(GWorldNum));
+        if(GEngine) {
+            auto ViewPort = GEngine->GameViewport;
+            if(ViewPort) {
+                GEWorld = ViewPort->World;
+                return ViewPort->World;
+            }
         }
     }
-}
-return 0;
+    return 0;
 }
 
 // HMOOD__TG@i_8_f
