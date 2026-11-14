@@ -31,7 +31,10 @@ jobs:
           # 2. Заменяем старые названия внутри всех файлов кода (SDK.hpp, cpp, hpp)
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
           
-          # 3. Меняем пути внутри самого проекта Xcode
+          # 3. Исправляем ошибку компиляции Clang (unknown type name '__forceinline')
+          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/__forceinline/inline/g' {} +
+          
+          # 4. Меняем пути внутри самого проекта Xcode
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
