@@ -548,8 +548,13 @@ TNameEntryArray *GetGNames() {
 
 
 
-// HMOOD__TG@i_8_f std::vector<AActor *> getActorsSafe(UWorld* World) {
-if (!World) return {}; ULevel* PersistentLevel = World->PersistentLevel; if (!PersistentLevel) return {};
+// HMOOD__TG@i_8_f
+std::vector<AActor *> getActorsSafe(UWorld* World) 
+{ 
+    if (!World) return {}; 
+    ULevel* PersistentLevel = World->PersistentLevel; 
+    if (!PersistentLevel) return 
+{};
 NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
 NSString *BundID = [infoDictionary objectForKey:@"CFBundleIdentifier"];
 
