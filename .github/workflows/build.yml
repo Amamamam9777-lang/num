@@ -1,4 +1,4 @@
-name: Build Dylib
+name: Build Dylib with Theos
 on:
   push:
     branches: [ main ]
@@ -11,10 +11,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Fix SDK Naming and Clean Project
+      - name: Setup Theos
+        uses: randomblock1/theos-action@v1
+        with:
+          theos-path: /opt/theos
+
+      - name: Fix SDK Naming (адаптация под Theos)
         run: |
           export LC_ALL=C
-          echo "1. Переименовываем файлы SDK..."
+          echo "Адаптируем файлы SDK..."
+          # Переименовываем файлы из Dolphin-Plus в SHANKS_PUBGM
           cd HMOOD/SDK || exit 1
           for file in Dolphin-Plus_*; do
             if [ -f "$file" ]; then
@@ -22,54 +28,18 @@ jobs:
             fi
           done
           cd ../..
-          
-          echo "2. Меняем пути внутри кода..."
+          # Заменяем старые названия внутри всех файлов кода
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
-          
-          echo "3. Обновляем project.pbxproj..."
-          PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
-          if [ -n "$PROJECT_FILE" ]; then
-            sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
-          fi
-          
-          echo "4. Устанавливаем xcodeproj и удаляем 'фантомные' файлы..."
-          gem install xcodeproj
-          cat << 'EOF' > clean_project.rb
-          require 'xcodeproj'
-          project_path = Dir.glob("**/*.xcodeproj").first
-          if project_path
-            project = Xcodeproj::Project.open(project_path)
-            project.files.each do |file|
-              if file.path && (file.path.end_with?('.cpp') || file.path.end_with?('.hpp')) && !File.exist?(file.real_path)
-                puts "Удаляем отсутствующий файл: #{file.path}"
-                file.remove_from_project
-              end
-            end
-            project.save
-          end
-          EOF
-          ruby clean_project.rb
 
-      - name: Build with Full Logging
+      - name: Build with Theos
         run: |
-          PROJECT_PATH=$(find . -name "*.xcodeproj" -maxdepth 3 | head -n 1)
-          PROJECT_DIR=$(dirname "$PROJECT_PATH")
-          PROJECT_NAME=$(basename "$PROJECT_PATH")
-          cd "$PROJECT_DIR"
-          SCHEME=$(xcodebuild -list -project "$PROJECT_NAME" -json | jq -r '.project.schemes[0]')
-          
-          echo "Начинаем сборку схемы: $SCHEME"
-          # Собираем с флагами для более подробного вывода ошибок
-          xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos \
-            CODE_SIGNING_ALLOWED=NO \
-            OTHER_CFLAGS="-fms-extensions" \
-            OTHER_CPLUSPLUSFLAGS="-fms-extensions" \
-            -derivedDataPath ./build \
-            | tee build_log.txt
+          # Собираем проект
+          make
+          # Копируем готовый файл для артефакта
+          cp .theos/obj/HMOOD_FUCK_MAX.dylib ./final.dylib || cp .theos/obj/debug/HMOOD_FUCK_MAX.dylib ./final.dylib
 
-      - name: Upload Build Log
-        if: always() # Загружаем лог, даже если сборка упала
+      - name: Upload Dylib
         uses: actions/upload-artifact@v4
         with:
-          name: full-build-log
-          path: "**/build_log.txt"
+          name: HMOOD_FUCK_MAX-dylib
+          path: final.dylib
