@@ -1484,17 +1484,8 @@ namespace CyberMenu {
 
 
     static void frame(const Canvas& c) {
-        c.rect(39, 30, 956, 597, IM_COL32(7, 8, 11, 255), 9);
-        Reference& chrome = highQualityFrame();
-        if (chrome.texture)
-            c.dl->AddImage((__bridge ImTextureID)chrome.texture, c.p(0, 0), c.p(1024, 676));
-        else {
-            for (int i = 0; i < 5; ++i)
-                c.dl->AddRect(c.p(8 + i * 5, 8 + i * 5), c.p(1016 - i * 5, 668 - i * 5),
-                              i % 2 ? IM_COL32(77, 81, 89, 255) : Red, 16 * c.scale, 0, 5 * c.scale);
-            c.line(44, 139, 991, 139, Red, 5);
-            c.line(245, 145, 245, 612, Red, 5);
-        }
+        // WOLF clean layout: outer metallic/chrome frame intentionally removed.
+        // Keep the WOLF title artwork; the content panels and navigation remain unchanged.
         Reference& brand = artwork(1);
         if (brand.texture) {
             const float width = 610.f, height = width * brand.h / brand.w;
@@ -1836,7 +1827,7 @@ namespace CyberMenu {
 
     static void openChannel() {
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSURL* url = [NSURL URLWithString:@"https://t.me/wolf_ios"];
+            NSURL* url = [NSURL URLWithString:@"https://t.me/hmoodhack"];
             [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
         });
     }
@@ -2407,12 +2398,6 @@ namespace CyberMenu {
             pageCanvas.switchReveal = motion.switches();
             pageCanvas.animationTime = motion.lastFrame;
             Canvas content = pageCanvas;
-            if (highQualityFrame().texture) {
-                content.stretchX = .954f;
-                content.origin.x += 253.f * (1.f - content.stretchX) * scale;
-                content.stretchY = .98f;
-                content.origin.y += 164.f * (1.f - content.stretchY) * scale;
-            }
             const int firstContentVertex = c.dl->VtxBuffer.Size;
             switch (page) {
             case 0:
