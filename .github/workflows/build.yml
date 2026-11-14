@@ -13,24 +13,25 @@ jobs:
 
       - name: Fix SDK Naming
         run: |
-          echo "Исправляем названия файлов SDK..."
+          echo "Исправляем названия файлов и путей SDK..."
           
-          # 1. Переименовываем файлы в папке SDK
+          # 1. Переименовываем сами файлы в папке SDK
           cd HMOOD/SDK || exit 1
           for file in Dolphin-Plus_*; do
             if [ -f "$file" ]; then
-              # Меняем Dolphin-Plus_ на SHANKS_PUBGM_
               new_name=$(echo "$file" | sed 's/Dolphin-Plus_/SHANKS_PUBGM_/g')
               mv "$file" "$new_name"
-              echo "Переименован: $file -> $new_name"
             fi
           done
           cd ../..
           
-          # 2. Меняем пути внутри самого проекта Xcode
+          # 2. Заменяем старые названия внутри всех файлов кода (SDK.hpp, cpp, hpp)
+          # Это исправит ошибку "#include file not found"
+          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
+          
+          # 3. Меняем пути внутри самого проекта Xcode
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
-            # Заменяем упоминания Dolphin-Plus на SHANKS_PUBGM
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
             echo "Обновлен файл проекта: $PROJECT_FILE"
           fi
