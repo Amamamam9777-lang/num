@@ -11,92 +11,65 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Fix SDK Naming
+      - name: Fix SDK Naming and Clean Project
         run: |
           export LC_ALL=C
-          echo "Исправляем названия файлов и пути SDK..."
-          
-          # 1. Переименовываем файлы из Dolphin-Plus в SHANKS_PUBGM (чтобы старый код Engine.mm работал)
+          echo "1. Переименовываем файлы SDK..."
           cd HMOOD/SDK || exit 1
           for file in Dolphin-Plus_*; do
             if [ -f "$file" ]; then
-              new_name=$(echo "$file" | sed 's/Dolphin-Plus_/SHANKS_PUBGM_/g')
-              mv "$file" "$new_name"
+              mv "$file" "$(echo "$file" | sed 's/Dolphin-Plus_/SHANKS_PUBGM_/g')"
             fi
           done
           cd ../..
           
-          # 2. Заменяем старые названия внутри файлов кода
+          echo "2. Меняем пути внутри кода..."
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
           
-          # 3. Меняем пути в проекте Xcode
+          echo "3. Обновляем project.pbxproj..."
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
           fi
-
-      - name: Clean Xcode Project from missing files
-        run: |
-          echo "Очищаем проект от файлов, которых нет в новом SDK..."
-          # Устанавливаем библиотеку для работы с проектами Xcode
-          gem install xcodeproj
           
-          # Создаем Ruby-скрипт, который удалит отсутствующие файлы
+          echo "4. Устанавливаем xcodeproj и удаляем 'фантомные' файлы..."
+          gem install xcodeproj
           cat << 'EOF' > clean_project.rb
           require 'xcodeproj'
-          
-          # Ищем файл проекта
           project_path = Dir.glob("**/*.xcodeproj").first
           if project_path
             project = Xcodeproj::Project.open(project_path)
-            # Проходим по всем файлам в проекте
             project.files.each do |file|
-              # Если это код (cpp/hpp) и его нет на диске
               if file.path && (file.path.end_with?('.cpp') || file.path.end_with?('.hpp')) && !File.exist?(file.real_path)
-                puts "Удаляем ссылку на отсутствующий файл: #{file.path}"
+                puts "Удаляем отсутствующий файл: #{file.path}"
                 file.remove_from_project
               end
             end
             project.save
           end
           EOF
-          
-          # Запускаем скрипт
           ruby clean_project.rb
 
-      - name: Find and Build Xcode Project
+      - name: Build with Full Logging
         run: |
           PROJECT_PATH=$(find . -name "*.xcodeproj" -maxdepth 3 | head -n 1)
-          if [ -z "$PROJECT_PATH" ]; then echo "ОШИБКА: .xcodeproj не найден!"; exit 1; fi
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           PROJECT_NAME=$(basename "$PROJECT_PATH")
-          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
           cd "$PROJECT_DIR"
           SCHEME=$(xcodebuild -list -project "$PROJECT_NAME" -json | jq -r '.project.schemes[0]')
           
+          echo "Начинаем сборку схемы: $SCHEME"
+          # Собираем с флагами для более подробного вывода ошибок
           xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             OTHER_CFLAGS="-fms-extensions" \
             OTHER_CPLUSPLUSFLAGS="-fms-extensions" \
-            -derivedDataPath ./build
+            -derivedDataPath ./build \
+            | tee build_log.txt
 
-      - name: Extract binary and rename to dylib
-        run: |
-          cd "$PROJECT_DIR"
-          BUILD_DIR=$(find . -type d -path "*/Build/Products/Release-iphoneos" | head -n 1)
-          if [ -z "$BUILD_DIR" ]; then echo "ОШИБКА: Папка сборки не найдена!"; exit 1; fi
-          cd "$BUILD_DIR"
-          FRAMEWORK_DIR=$(find . -maxdepth 1 -name "*.framework" | head -n 1)
-          if [ -n "$FRAMEWORK_DIR" ]; then
-            FRAMEWORK_NAME=$(basename "$FRAMEWORK_DIR" .framework)
-            cp "$FRAMEWORK_DIR/$FRAMEWORK_NAME" "./$FRAMEWORK_NAME.dylib"
-          else
-            find . -name "*.dylib" -exec cp {} ./ \;
-          fi
-          cd "$GITHUB_WORKSPACE"
-
-      - name: Upload artifact
+      - name: Upload Build Log
+        if: always() # Загружаем лог, даже если сборка упала
         uses: actions/upload-artifact@v4
         with:
-          name: final-dylib
-          path: "**/*.dylib"
+          name: full-build-log
+          path: "**/build_log.txt"
