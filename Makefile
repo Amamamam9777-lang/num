@@ -7,9 +7,10 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = HMOOD_FUCK_MAX
 
-# Автоматически собираем все исходники
+# Автоматически собираем все исходники, включая папку imgui
 $(TWEAK_NAME)_FILES = $(wildcard HMOOD/*.mm) $(wildcard HMOOD/*.m) $(wildcard HMOOD/*.cpp) $(wildcard HMOOD/*.xm) \
                       $(wildcard HMOOD/ESP/*.mm) $(wildcard HMOOD/ESP/*.m) $(wildcard HMOOD/ESP/*.cpp) \
+                      $(wildcard HMOOD/ESP/imgui/*.mm) $(wildcard HMOOD/ESP/imgui/*.m) $(wildcard HMOOD/ESP/imgui/*.cpp) \
                       $(wildcard HMOOD/SDK/*.cpp) $(wildcard HMOOD/SDK/*.mm) $(wildcard HMOOD/SDK/*.m)
 
 # Отключаем -Werror и мешающие предупреждения
