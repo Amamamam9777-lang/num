@@ -1,5 +1,4 @@
 # Настройки Theos
-export THEOS = /opt/theos
 export ARCHS = arm64 arm64e
 export TARGET = iphone:clang:latest:14.0
 export THEOS_PACKAGE_SCHEME = rootless
