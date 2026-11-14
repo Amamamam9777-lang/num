@@ -1,4 +1,4 @@
-name: Build Dylib with Theos
+name: Build Framework with Theos
 on:
   push:
     branches: [ main ]
@@ -29,26 +29,33 @@ jobs:
           cd ../..
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
 
-      - name: Build with Theos
+      - name: Build Framework with Theos
         run: |
           export THEOS=$GITHUB_WORKSPACE/theos
           make
 
-      - name: Find and Upload Dylib
+      - name: Find and Prepare Framework
         run: |
-          # Ищем собранный dylib в любых местах, где его может сохранить Theos
-          DYLIB_PATH=$(find .theos -name "HMOOD_FUCK_MAX.dylib" -type f | head -n 1)
-          if [ -z "$DYLIB_PATH" ]; then
-            echo "ОШИБКА: .dylib не найден!"
-            find .theos -name "*.dylib"
+          # Ищем собранный фреймворк
+          FW_PATH=$(find .theos -name "HMOOD_FUCK_MAX.framework" -type d | head -n 1)
+          if [ -z "$FW_PATH" ]; then
+            echo "ОШИБКА: .framework не найден!"
+            find .theos -name "*.framework" -type d
             exit 1
           fi
-          echo "Найден файл: $DYLIB_PATH"
-          cp "$DYLIB_PATH" ./final.dylib
-          ls -la ./final.dylib
+          echo "Найден фреймворк: $FW_PATH"
+          
+          # Проверяем содержимое
+          ls -la "$FW_PATH"
+          
+          # Копируем в корень для загрузки
+          cp -R "$FW_PATH" ./HMOOD_FUCK_MAX.framework
+          
+          # Упаковываем в zip, чтобы GitHub не поломал структуру папки при загрузке
+          zip -r HMOOD_FUCK_MAX.framework.zip HMOOD_FUCK_MAX.framework
 
-      - name: Upload Dylib
+      - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
-          name: HMOOD_FUCK_MAX-dylib
-          path: final.dylib
+          name: HMOOD_FUCK_MAX-framework
+          path: HMOOD_FUCK_MAX.framework.zip
