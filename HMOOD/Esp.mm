@@ -300,8 +300,8 @@ namespace {
     static void CaptureVehicleDetails(ASTExtraVehicleBase* vehicle, WorldMarker& marker) {
         marker.name = GetVehicleName(vehicle);
         if (auto* common = vehicle->VehicleCommon) {
-            if (std::isfinite(common->HPMax) && common->HPMax > 0.f && std::isfinite(common->HP))
-                marker.healthRatio = ImClamp(common->HP / common->HPMax, 0.f, 1.f);
+            if (std::isfinite(common->HPMax) && common->HPMax > 0.f && std::isfinite(common->Health))
+            marker.healthRatio = ImClamp(common->Health / common->HPMax, 0.f, 1.f);
             if (std::isfinite(common->FuelMax) && common->FuelMax > 0.f && std::isfinite(common->Fuel))
                 marker.fuelRatio = ImClamp(common->Fuel / common->FuelMax, 0.f, 1.f);
         }
