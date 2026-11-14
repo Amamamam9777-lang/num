@@ -34,27 +34,45 @@ jobs:
           export THEOS=$GITHUB_WORKSPACE/theos
           make
 
-      - name: Find and Prepare Framework
+      - name: Fix Substrate Dependency
         run: |
-          # Ищем собранный фреймворк
-          FW_PATH=$(find .theos -name "HMOOD_FUCK_MAX.framework" -type d | head -n 1)
-          if [ -z "$FW_PATH" ]; then
-            echo "ОШИБКА: .framework не найден!"
-            find .theos -name "*.framework" -type d
+          # 1. Находим собранный фреймворк и бинарник внутри него
+          FW_DIR=$(find .theos -name "HMOOD_FUCK_MAX.framework" -type d | head -n 1)
+          BINARY="$FW_DIR/HMOOD_FUCK_MAX"
+          
+          if [ ! -f "$BINARY" ]; then
+            echo "ОШИБКА: Бинарник не найден!"
             exit 1
           fi
-          echo "Найден фреймворк: $FW_PATH"
-          
-          # Проверяем содержимое
-          ls -la "$FW_PATH"
-          
-          # Копируем в корень для загрузки
-          cp -R "$FW_PATH" ./HMOOD_FUCK_MAX.framework
-          
-          # Упаковываем в zip, чтобы GitHub не поломал структуру папки при загрузке
-          zip -r HMOOD_FUCK_MAX.framework.zip HMOOD_FUCK_MAX.framework
+
+          echo "=== Зависимости ДО фикса ==="
+          otool -L "$BINARY" | grep -i substrate || echo "Зависимость от Substrate не найдена (возможно, уже исправлено)"
+
+          # 2. Меняем путь с системного на @loader_path
+          # Пробуем оба возможных варианта пути, которые может прописать Theos
+          install_name_tool -change /Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate @loader_path/libsubstrate.dylib "$BINARY" || true
+          install_name_tool -change /usr/lib/libsubstrate.dylib @loader_path/libsubstrate.dylib "$BINARY" || true
+
+          # 3. Копируем саму библиотеку libsubstrate.dylib внутрь фреймворка
+          # Theos обычно хранит её в $THEOS/lib или $THEOS/vendor/lib
+          SUBSTRATE_LIB=$(find $THEOS -name "libsubstrate.dylib" | head -n 1)
+          if [ -n "$SUBSTRATE_LIB" ]; then
+            cp "$SUBSTRATE_LIB" "$FW_DIR/"
+            echo "Скопирован libsubstrate.dylib из $SUBSTRATE_LIB"
+          else
+            echo "ВНИМАНИЕ: libsubstrate.dylib не найден в Theos! Возможно, потребуется установить его вручную."
+          fi
+
+          echo "=== Зависимости ПОСЛЕ фикса ==="
+          otool -L "$BINARY" | grep -i substrate || echo "Зависимость от Substrate успешно удалена/изменена"
 
       - name: Upload Framework
+        run: |
+          FW_DIR=$(find .theos -name "HMOOD_FUCK_MAX.framework" -type d | head -n 1)
+          zip -r HMOOD_FUCK_MAX.framework.zip "$FW_DIR"
+          ls -la HMOOD_FUCK_MAX.framework.zip
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: HMOOD_FUCK_MAX-framework
