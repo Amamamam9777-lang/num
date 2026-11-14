@@ -29,8 +29,8 @@ jobs:
           # 2. Заменяем старые названия внутри файлов кода
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
           
-          # 3. ИСПРАВЛЯЕМ ОШИБКУ __forceinline (новая версия)
-          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/__forceinline/__attribute__((always_inline))/g' {} +
+          # 3. ИСПРАВЛЯЕМ ОШИБКУ __forceinline (правильная замена для Clang)
+          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/__forceinline/inline __attribute__((always_inline))/g' {} +
           
           # 4. Меняем пути в проекте Xcode
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
