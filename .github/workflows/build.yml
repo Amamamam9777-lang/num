@@ -33,6 +33,16 @@ jobs:
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
+            
+            # 4. Удаляем из проекта ссылки на файлы .cpp, которых нет на диске
+            grep -oE '"[^"]*\.cpp"' "$PROJECT_FILE" | tr -d '"' | sort -u > /tmp/expected_cpps.txt
+            while read -r file; do
+              basename=$(basename "$file")
+              if [ ! -f "HMOOD/SDK/$basename" ]; then
+                echo "Удаляем ссылку на отсутствующий файл: $basename"
+                sed -i '' "/$basename/d" "$PROJECT_FILE"
+              fi
+            done < /tmp/expected_cpps.txt
           fi
 
       - name: Find and Build Xcode Project
@@ -45,7 +55,6 @@ jobs:
           cd "$PROJECT_DIR"
           SCHEME=$(xcodebuild -list -project "$PROJECT_NAME" -json | jq -r '.project.schemes[0]')
           
-          # Добавляем флаги для поддержки расширений Microsoft (включая __forceinline)
           xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             OTHER_CFLAGS="-fms-extensions" \
