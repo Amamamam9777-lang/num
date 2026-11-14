@@ -671,7 +671,7 @@ ASTExtraPlayerController *g_PlayerController;
  
 UGameplayStatics* iosde = (UGameplayStatics*)UGameplayStatics::StaticClass();
 
-#define W2S(w, s) iosde->ProjectWorldToScreen(localPlayerController, w, true, s)
+//#define W2S(w, s) iosde->ProjectWorldToScreen(localPlayerController, w, true, s)
 
 
 // HMOOD__TG@i_8_f
