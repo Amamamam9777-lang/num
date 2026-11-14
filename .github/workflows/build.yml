@@ -13,6 +13,9 @@ jobs:
 
       - name: Fix SDK Naming
         run: |
+          # Эта строка заставляет sed работать с любыми файлами, игнорируя проблемы с кодировкой
+          export LC_ALL=C
+          
           echo "Исправляем названия файлов и путей SDK..."
           
           # 1. Переименовываем сами файлы в папке SDK
@@ -26,7 +29,6 @@ jobs:
           cd ../..
           
           # 2. Заменяем старые названия внутри всех файлов кода (SDK.hpp, cpp, hpp)
-          # Это исправит ошибку "#include file not found"
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
           
           # 3. Меняем пути внутри самого проекта Xcode
