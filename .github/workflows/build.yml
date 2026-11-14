@@ -20,7 +20,6 @@ jobs:
         run: |
           export LC_ALL=C
           echo "Адаптируем файлы SDK..."
-          # Переименовываем файлы из Dolphin-Plus в SHANKS_PUBGM
           cd HMOOD/SDK || exit 1
           for file in Dolphin-Plus_*; do
             if [ -f "$file" ]; then
@@ -28,20 +27,25 @@ jobs:
             fi
           done
           cd ../..
-          # Заменяем старые названия внутри всех файлов кода
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
 
       - name: Build with Theos
         run: |
-          # Явно указываем путь к Theos для этого шага
           export THEOS=$GITHUB_WORKSPACE/theos
-          echo "Using THEOS at: $THEOS"
-          
-          # Запускаем сборку
           make
-          
-          # Копируем готовый файл для артефакта
-          cp .theos/obj/HMOOD_FUCK_MAX.dylib ./final.dylib || cp .theos/obj/debug/HMOOD_FUCK_MAX.dylib ./final.dylib
+
+      - name: Find and Upload Dylib
+        run: |
+          # Ищем собранный dylib в любых местах, где его может сохранить Theos
+          DYLIB_PATH=$(find .theos -name "HMOOD_FUCK_MAX.dylib" -type f | head -n 1)
+          if [ -z "$DYLIB_PATH" ]; then
+            echo "ОШИБКА: .dylib не найден!"
+            find .theos -name "*.dylib"
+            exit 1
+          fi
+          echo "Найден файл: $DYLIB_PATH"
+          cp "$DYLIB_PATH" ./final.dylib
+          ls -la ./final.dylib
 
       - name: Upload Dylib
         uses: actions/upload-artifact@v4
