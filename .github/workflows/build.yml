@@ -13,12 +13,10 @@ jobs:
 
       - name: Fix SDK Naming
         run: |
-          # Эта строка заставляет sed работать с любыми файлами, игнорируя проблемы с кодировкой
           export LC_ALL=C
+          echo "Исправляем названия файлов и пути SDK..."
           
-          echo "Исправляем названия файлов и путей SDK..."
-          
-          # 1. Переименовываем сами файлы в папке SDK
+          # 1. Переименовываем файлы
           cd HMOOD/SDK || exit 1
           for file in Dolphin-Plus_*; do
             if [ -f "$file" ]; then
@@ -28,61 +26,42 @@ jobs:
           done
           cd ../..
           
-          # 2. Заменяем старые названия внутри всех файлов кода (SDK.hpp, cpp, hpp)
+          # 2. Заменяем старые названия внутри файлов кода
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
           
-          # 3. Исправляем ошибку компиляции Clang (unknown type name '__forceinline')
-          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/__forceinline/inline/g' {} +
+          # 3. ИСПРАВЛЯЕМ ОШИБКУ __forceinline (новая версия)
+          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/__forceinline/__attribute__((always_inline))/g' {} +
           
-          # 4. Меняем пути внутри самого проекта Xcode
+          # 4. Меняем пути в проекте Xcode
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
-            echo "Обновлен файл проекта: $PROJECT_FILE"
           fi
 
       - name: Find and Build Xcode Project
         run: |
           PROJECT_PATH=$(find . -name "*.xcodeproj" -maxdepth 3 | head -n 1)
-          
-          if [ -z "$PROJECT_PATH" ]; then
-            echo "ОШИБКА: Файл .xcodeproj не найден!"
-            exit 1
-          fi
-          
+          if [ -z "$PROJECT_PATH" ]; then echo "ОШИБКА: .xcodeproj не найден!"; exit 1; fi
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           PROJECT_NAME=$(basename "$PROJECT_PATH")
-          
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
           cd "$PROJECT_DIR"
-          
           SCHEME=$(xcodebuild -list -project "$PROJECT_NAME" -json | jq -r '.project.schemes[0]')
-          echo "Собираем схему: $SCHEME"
-          
           xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO -derivedDataPath ./build
 
       - name: Extract binary and rename to dylib
         run: |
           cd "$PROJECT_DIR"
           BUILD_DIR=$(find . -type d -path "*/Build/Products/Release-iphoneos" | head -n 1)
-          
-          if [ -z "$BUILD_DIR" ]; then
-            echo "ОШИБКА: Папка с результатами сборки не найдена!"
-            exit 1
-          fi
-          
+          if [ -z "$BUILD_DIR" ]; then echo "ОШИБКА: Папка сборки не найдена!"; exit 1; fi
           cd "$BUILD_DIR"
           FRAMEWORK_DIR=$(find . -maxdepth 1 -name "*.framework" | head -n 1)
-          
           if [ -n "$FRAMEWORK_DIR" ]; then
             FRAMEWORK_NAME=$(basename "$FRAMEWORK_DIR" .framework)
-            echo "Найден фреймворк: $FRAMEWORK_NAME"
             cp "$FRAMEWORK_DIR/$FRAMEWORK_NAME" "./$FRAMEWORK_NAME.dylib"
-            echo "Успешно создан $FRAMEWORK_NAME.dylib"
           else
             find . -name "*.dylib" -exec cp {} ./ \;
           fi
-          
           cd "$GITHUB_WORKSPACE"
 
       - name: Upload artifact
