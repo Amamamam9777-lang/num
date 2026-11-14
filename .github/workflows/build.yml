@@ -11,40 +11,53 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Fix SDK Naming
+        run: |
+          echo "Исправляем названия файлов SDK..."
+          
+          # 1. Переименовываем файлы в папке SDK
+          cd HMOOD/SDK || exit 1
+          for file in Dolphin-Plus_*; do
+            if [ -f "$file" ]; then
+              # Меняем Dolphin-Plus_ на SHANKS_PUBGM_
+              new_name=$(echo "$file" | sed 's/Dolphin-Plus_/SHANKS_PUBGM_/g')
+              mv "$file" "$new_name"
+              echo "Переименован: $file -> $new_name"
+            fi
+          done
+          cd ../..
+          
+          # 2. Меняем пути внутри самого проекта Xcode
+          PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
+          if [ -n "$PROJECT_FILE" ]; then
+            # Заменяем упоминания Dolphin-Plus на SHANKS_PUBGM
+            sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
+            echo "Обновлен файл проекта: $PROJECT_FILE"
+          fi
+
       - name: Find and Build Xcode Project
         run: |
-          # 1. Ищем файл .xcodeproj в любом месте репозитория
           PROJECT_PATH=$(find . -name "*.xcodeproj" -maxdepth 3 | head -n 1)
           
           if [ -z "$PROJECT_PATH" ]; then
-            echo "ОШИБКА: Файл .xcodeproj не найден в репозитории!"
-            echo "Убедитесь, что вы загрузили папку с проектом."
+            echo "ОШИБКА: Файл .xcodeproj не найден!"
             exit 1
           fi
           
-          echo "Найден проект: $PROJECT_PATH"
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           PROJECT_NAME=$(basename "$PROJECT_PATH")
           
-          # Запоминаем путь для следующего шага
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-          
-          # Переходим в папку с проектом
           cd "$PROJECT_DIR"
           
-          # 2. Получаем имя схемы (схема — это то, что мы собираем)
           SCHEME=$(xcodebuild -list -project "$PROJECT_NAME" -json | jq -r '.project.schemes[0]')
           echo "Собираем схему: $SCHEME"
           
-          # 3. Запускаем сборку
           xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO -derivedDataPath ./build
 
       - name: Extract binary and rename to dylib
         run: |
-          # Переходим в папку проекта, путь к которой мы сохранили
           cd "$PROJECT_DIR"
-          
-          # Ищем папку с результатами сборки
           BUILD_DIR=$(find . -type d -path "*/Build/Products/Release-iphoneos" | head -n 1)
           
           if [ -z "$BUILD_DIR" ]; then
@@ -53,22 +66,17 @@ jobs:
           fi
           
           cd "$BUILD_DIR"
-          
-          # Ищем собранный фреймворк (так как ранее он собирался как .framework)
           FRAMEWORK_DIR=$(find . -maxdepth 1 -name "*.framework" | head -n 1)
           
           if [ -n "$FRAMEWORK_DIR" ]; then
             FRAMEWORK_NAME=$(basename "$FRAMEWORK_DIR" .framework)
             echo "Найден фреймворк: $FRAMEWORK_NAME"
-            # Достаем бинарник из фреймворка и переименовываем в .dylib
             cp "$FRAMEWORK_DIR/$FRAMEWORK_NAME" "./$FRAMEWORK_NAME.dylib"
             echo "Успешно создан $FRAMEWORK_NAME.dylib"
           else
-            # Если вдруг Xcode сразу собрал .dylib
             find . -name "*.dylib" -exec cp {} ./ \;
           fi
           
-          # Возвращаемся в корень для загрузки
           cd "$GITHUB_WORKSPACE"
 
       - name: Upload artifact
