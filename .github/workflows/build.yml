@@ -29,10 +29,7 @@ jobs:
           # 2. Заменяем старые названия внутри файлов кода
           find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/Dolphin-Plus_/SHANKS_PUBGM_/g' {} +
           
-          # 3. ИСПРАВЛЯЕМ ОШИБКУ __forceinline (правильная замена для Clang)
-          find . -type f \( -name "*.hpp" -o -name "*.cpp" -o -name "*.h" -o -name "*.mm" \) -exec sed -i '' 's/__forceinline/inline __attribute__((always_inline))/g' {} +
-          
-          # 4. Меняем пути в проекте Xcode
+          # 3. Меняем пути в проекте Xcode
           PROJECT_FILE=$(find . -name "project.pbxproj" | head -n 1)
           if [ -n "$PROJECT_FILE" ]; then
             sed -i '' 's/Dolphin-Plus/SHANKS_PUBGM/g' "$PROJECT_FILE"
@@ -47,7 +44,13 @@ jobs:
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
           cd "$PROJECT_DIR"
           SCHEME=$(xcodebuild -list -project "$PROJECT_NAME" -json | jq -r '.project.schemes[0]')
-          xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO -derivedDataPath ./build
+          
+          # Добавляем флаги для поддержки расширений Microsoft (включая __forceinline)
+          xcodebuild -project "$PROJECT_NAME" -scheme "$SCHEME" -configuration Release -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            OTHER_CFLAGS="-fms-extensions" \
+            OTHER_CPLUSPLUSFLAGS="-fms-extensions" \
+            -derivedDataPath ./build
 
       - name: Extract binary and rename to dylib
         run: |
