@@ -153,10 +153,10 @@ UIImage* GetMenuBadgeImage() {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         NSData* data = [[NSData alloc] initWithBase64EncodedString:
-            [NSString stringWithUTF8String:kCyberDetailedBrand] options:0];
+            [NSString stringWithUTF8String:kWolfBadgeImage] options:0];
         UIImage* source = data ? [UIImage imageWithData:data] : nil;
         if (!source.CGImage) return;
-        CGImageRef crop = CGImageCreateWithImageInRect(source.CGImage, CGRectMake(44, 134, 448, 448));
+        CGImageRef crop = CGImageCreateWithImageInRect(source.CGImage, CGRectMake(0, 0, 512, 512));
         if (!crop) return;
         UIImage* circle = [UIImage imageWithCGImage:crop];
         UIGraphicsImageRendererFormat* format = [UIGraphicsImageRendererFormat defaultFormat];
@@ -373,23 +373,23 @@ void ApplyImGuiStyle() {
     c[ImGuiCol_TitleBgCollapsed] = {0.031f, 0.035f, 0.055f, 1.f};
     c[ImGuiCol_ScrollbarBg] = {0.f, 0.f, 0.f, 0.f};
     c[ImGuiCol_ScrollbarGrab] = {0.110f, 0.118f, 0.180f, 1.f};
-    c[ImGuiCol_ScrollbarGrabHovered] = {0.820f, 0.071f, 0.188f, 0.5f};
-    c[ImGuiCol_ScrollbarGrabActive] = {0.820f, 0.071f, 0.188f, 1.f};
-    c[ImGuiCol_CheckMark] = {0.820f, 0.071f, 0.188f, 1.f};
-    c[ImGuiCol_SliderGrab] = {0.820f, 0.071f, 0.188f, 1.f};
+    c[ImGuiCol_ScrollbarGrabHovered] = {0.035f, 0.38f, 0.98f, 0.5f};
+    c[ImGuiCol_ScrollbarGrabActive] = {0.035f, 0.38f, 0.98f, 1.f};
+    c[ImGuiCol_CheckMark] = {0.035f, 0.38f, 0.98f, 1.f};
+    c[ImGuiCol_SliderGrab] = {0.035f, 0.38f, 0.98f, 1.f};
     c[ImGuiCol_SliderGrabActive] = {1.f, 0.380f, 0.490f, 1.f};
     c[ImGuiCol_Button] = {0.075f, 0.082f, 0.122f, 1.f};
-    c[ImGuiCol_ButtonHovered] = {0.820f, 0.071f, 0.188f, 0.18f};
-    c[ImGuiCol_ButtonActive] = {0.820f, 0.071f, 0.188f, 0.35f};
-    c[ImGuiCol_Header] = {0.820f, 0.071f, 0.188f, 0.15f};
-    c[ImGuiCol_HeaderHovered] = {0.820f, 0.071f, 0.188f, 0.25f};
-    c[ImGuiCol_HeaderActive] = {0.820f, 0.071f, 0.188f, 0.40f};
+    c[ImGuiCol_ButtonHovered] = {0.035f, 0.38f, 0.98f, 0.18f};
+    c[ImGuiCol_ButtonActive] = {0.035f, 0.38f, 0.98f, 0.35f};
+    c[ImGuiCol_Header] = {0.035f, 0.38f, 0.98f, 0.15f};
+    c[ImGuiCol_HeaderHovered] = {0.035f, 0.38f, 0.98f, 0.25f};
+    c[ImGuiCol_HeaderActive] = {0.035f, 0.38f, 0.98f, 0.40f};
     c[ImGuiCol_Separator] = {0.110f, 0.118f, 0.180f, 1.f};
-    c[ImGuiCol_SeparatorHovered] = {0.820f, 0.071f, 0.188f, 0.5f};
-    c[ImGuiCol_SeparatorActive] = {0.820f, 0.071f, 0.188f, 1.f};
+    c[ImGuiCol_SeparatorHovered] = {0.035f, 0.38f, 0.98f, 0.5f};
+    c[ImGuiCol_SeparatorActive] = {0.035f, 0.38f, 0.98f, 1.f};
     c[ImGuiCol_Tab] = {0.051f, 0.059f, 0.086f, 1.f};
-    c[ImGuiCol_TabHovered] = {0.820f, 0.071f, 0.188f, 0.20f};
-    c[ImGuiCol_TabActive] = {0.820f, 0.071f, 0.188f, 0.30f};
+    c[ImGuiCol_TabHovered] = {0.035f, 0.38f, 0.98f, 0.20f};
+    c[ImGuiCol_TabActive] = {0.035f, 0.38f, 0.98f, 0.30f};
     c[ImGuiCol_TableHeaderBg] = {0.031f, 0.035f, 0.055f, 1.f};
     c[ImGuiCol_TableBorderStrong] = {0.110f, 0.118f, 0.180f, 1.f};
     c[ImGuiCol_TableBorderLight] = {0.075f, 0.082f, 0.122f, 1.f};
@@ -819,7 +819,7 @@ namespace CyberMenu {
 // HMOOD__TG@i_8_f
 
 
-    static const ImU32 Red = IM_COL32(195, 12, 41, 255);
+    static const ImU32 Red = IM_COL32(23, 93, 195, 255);
     static const ImU32 White = IM_COL32(203, 204, 209, 255);
     static const ImU32 Muted = IM_COL32(112, 120, 130, 255);
     static const ImU32 Cyan = IM_COL32(17, 178, 201, 255);
@@ -948,7 +948,7 @@ namespace CyberMenu {
         attempted[index] = true;
         @autoreleasepool {
             const char* bytes[] = {kCyberDetailedFrame, kCyberDetailedBrand, kCyberDetailedBrand};
-            const CGRect crops[] = {CGRectMake(8, 8, 1528, 978), CGRectMake(60, 156, 2060, 403), CGRectMake(0, 0, 448, 448)};
+            const CGRect crops[] = {CGRectMake(8, 8, 1528, 978), CGRectMake(0, 0, 2172, 724), CGRectMake(0, 0, 448, 448)};
             NSString* encoded = [[NSString alloc] initWithUTF8String:bytes[index]];
             NSData* data = [[NSData alloc] initWithBase64EncodedString:encoded options:0];
             UIImage* decoded = index == 2 ? GetMenuBadgeImage() : (data ? [UIImage imageWithData:data] : nil);
@@ -1240,7 +1240,7 @@ namespace CyberMenu {
         c.dl->AddRectFilledMultiColor(c.p(x, y), c.p(x + w, y + h), IM_COL32(16, 8, 13, 255),
                                       IM_COL32(12, 8, 12, 255), IM_COL32(8, 9, 12, 255),
                                       IM_COL32(8, 9, 12, 255));
-        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(59, 13, 28, 210), 4 * c.scale, 0,
+        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(7, 28, 59, 210), 4 * c.scale, 0,
                       1.1f * c.scale);
         c.dl->AddRect(c.p(x + 2, y + 2), c.p(x + w - 2, y + h - 2), IM_COL32(37, 16, 24, 110), 3 * c.scale, 0,
                       .6f * c.scale);
@@ -1319,13 +1319,13 @@ namespace CyberMenu {
             Canvas c{draw, ImVec2(x, n.y), scale};
             const float w = width / scale;
             const int first = draw->VtxBuffer.Size;
-            const ImU32 accent = n.enabled ? IM_COL32(0, 238, 155, 255) : IM_COL32(233, 21, 57, 255);
+            const ImU32 accent = n.enabled ? IM_COL32(0, 238, 155, 255) : IM_COL32(27, 111, 233, 255);
             c.rect(-1, 1, w + 2, 45, IM_COL32(0, 0, 0, 45), 7);
             c.rect(0, 0, w, 44, n.enabled ? IM_COL32(3, 19, 15, 235) : IM_COL32(25, 5, 10, 235), 6);
             draw->AddRect(c.p(0, 0), c.p(w, 44),
-                          n.enabled ? IM_COL32(9, 156, 110, 225) : IM_COL32(144, 16, 40, 225), 6 * scale, 0,
+                          n.enabled ? IM_COL32(9, 156, 110, 225) : IM_COL32(17, 69, 144, 225), 6 * scale, 0,
                           1.3f * scale);
-            c.rect(3, 5, 5, 34, n.enabled ? IM_COL32(0, 226, 136, 45) : IM_COL32(255, 12, 52, 45), 2);
+            c.rect(3, 5, 5, 34, n.enabled ? IM_COL32(0, 226, 136, 45) : IM_COL32(30, 122, 255, 45), 2);
             c.rect(4, 5, 3, 34, accent, 1.5f);
             icon(c, n.glyph, 16, 7, 16, accent);
             c.text(40, 6, n.label.c_str(), 14, IM_COL32(234, 238, 239, 255), w - 50);
@@ -1381,7 +1381,7 @@ namespace CyberMenu {
             notifyFeature(label, glyph, *value);
         }
         ImU32 fg = available ? White : IM_COL32(106, 107, 113, 255);
-        icon(c, glyph, x + 3, y + 6, 23, available ? Red : IM_COL32(104, 20, 38, 255));
+        icon(c, glyph, x + 3, y + 6, 23, available ? Red : IM_COL32(12, 49, 104, 255));
         const float switchX = x + w - 52;
         c.text(x + 37, y + 4, label, 23, fg, w - 96);
         const ImGuiID key = ImGui::GetID(id);
@@ -1421,7 +1421,7 @@ namespace CyberMenu {
                        float high, float x, float y, float w, int glyph, bool available = true,
                        const char* disabledReason = "Not available, or controlled by the selected preset") {
         panel(c, x, y, w, 37);
-        icon(c, glyph, x + 10, y + 9, 19, available ? Red : IM_COL32(103, 23, 40, 255));
+        icon(c, glyph, x + 10, y + 9, 19, available ? Red : IM_COL32(12, 49, 103, 255));
         c.text(x + 37, y + 9, label, glyph == Percent ? 12.5f : 17.f, available ? White : Muted, 77);
         const float tx = x + 124, tw = w - 142, cy = y + 19;
         float t = ImClamp((*value - low) / (high - low), 0.f, 1.f);
@@ -1449,7 +1449,7 @@ namespace CyberMenu {
         }
         bool committed = ImGui::IsItemDeactivatedAfterEdit();
         c.rect(tx, cy - 2.25f, tw, 4.5f, IM_COL32(41, 26, 33, 255), 3);
-        c.rect(tx, cy - 2.25f, tw * t, 4.5f, available ? Red : IM_COL32(115, 23, 42, 255), 3);
+        c.rect(tx, cy - 2.25f, tw * t, 4.5f, available ? Red : IM_COL32(13, 55, 115, 255), 3);
         c.dl->AddCircleFilled(c.p(tx + tw * t, cy), 6.3f * c.scale, IM_COL32(237, 236, 239, 255), 20);
         c.dl->AddCircleFilled(c.p(tx + tw * t, cy), 3.2f * c.scale, Red, 16);
         return committed;
@@ -1458,7 +1458,7 @@ namespace CyberMenu {
     static bool combo(const Canvas& c, const char* id, int* current, const char* const* items, int count,
                       float x, float y, float w, float h = 32.f) {
         c.rect(x, y, w, h, IM_COL32(18, 12, 18, 255), 3);
-        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(74, 23, 39, 255), 3 * c.scale, 0,
+        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(8, 35, 74, 255), 3 * c.scale, 0,
                       1.5f * c.scale);
         const int selected = ImClamp(*current, 0, count - 1);
         c.text(x + 11, y + 5, items[selected], 19, White, w - 42);
@@ -1502,19 +1502,19 @@ namespace CyberMenu {
                            {0, 0}, {1, 1}, IM_COL32(225, 227, 232, 255));
         } else {
             const float titleSize = 44.f;
-            const float textWidth = ImGui::GetFont()->CalcTextSizeA(titleSize, FLT_MAX, 0, "HMOOD VIP").x;
-            c.text(540.f - textWidth * .5f, 60, "HMOOD VIP", titleSize, White);
+            const float textWidth = ImGui::GetFont()->CalcTextSizeA(titleSize, FLT_MAX, 0, "WOLF").x;
+            c.text(540.f - textWidth * .5f, 60, "WOLF", titleSize, White);
         }
     }
 
     static bool closeButton(const Canvas& c) {
         const bool clicked = hit(c, "##cyber_close", 899, 38, 44, 44, true, "Close menu");
         const bool hovered = ImGui::IsItemHovered();
-        c.rect(906, 44, 30, 29, hovered ? IM_COL32(107, 6, 25, 245) : IM_COL32(55, 5, 15, 235), 3);
+        c.rect(906, 44, 30, 29, hovered ? IM_COL32(12, 51, 107, 245) : IM_COL32(6, 26, 55, 235), 3);
         c.dl->AddRect(c.p(906, 44), c.p(936, 73),
-                      hovered ? IM_COL32(220, 16, 44, 230) : IM_COL32(148, 9, 32, 180), 3 * c.scale, 0,
+                      hovered ? IM_COL32(26, 105, 220, 230) : IM_COL32(17, 71, 148, 180), 3 * c.scale, 0,
                       .8f * c.scale);
-        const ImU32 color = hovered ? IM_COL32(255, 57, 77, 255) : IM_COL32(239, 19, 46, 255);
+        const ImU32 color = hovered ? IM_COL32(30, 122, 255, 255) : IM_COL32(28, 114, 239, 255);
         constexpr float pi = 3.14159265f;
         const float cx = 921.f, cy = 59.f, r = 7.8f, start = -pi * .5f + .68f, end = pi * 1.5f - .68f;
         c.dl->PathArcTo(c.p(cx, cy), r * c.scale, start, end, 28);
@@ -1752,7 +1752,7 @@ namespace CyberMenu {
                                       IM_COL32(17, 8, 12, 255));
         c.dl->AddRect(c.p(x - .8f, y - .8f), c.p(x + w + .8f, y + h + .8f), IM_COL32(4, 4, 6, 240),
                       (r + .8f) * c.scale, 0, 1.1f * c.scale);
-        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(65, 14, 29, 210), r * c.scale, 0,
+        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(7, 31, 65, 210), r * c.scale, 0,
                       .85f * c.scale);
         c.dl->AddRect(c.p(x + 1.5f, y + 1.5f), c.p(x + w - 1.5f, y + h - 1.5f), IM_COL32(23, 11, 17, 245),
                       (r - 1) * c.scale, 0, .75f * c.scale);
@@ -1760,7 +1760,7 @@ namespace CyberMenu {
                       (r - 2) * c.scale, 0, .55f * c.scale);
          
         for (int pass = 0; pass < 2; ++pass) {
-            const ImU32 color = pass ? IM_COL32(191, 16, 47, 180) : IM_COL32(177, 9, 41, 24);
+            const ImU32 color = pass ? IM_COL32(22, 91, 191, 180) : IM_COL32(21, 84, 177, 24);
             const float width = (pass ? .8f : 3.f) * c.scale;
             c.dl->AddBezierCubic(c.p(x + .6f, y + 18), c.p(x + .6f, y + 2), c.p(x + 2, y + .6f),
                                  c.p(x + 18, y + .6f), color, width, 12);
@@ -1769,11 +1769,11 @@ namespace CyberMenu {
             c.dl->AddBezierCubic(c.p(x + w - 17, y + h - .6f), c.p(x + w - 2, y + h - .6f),
                                  c.p(x + w - .6f, y + h - 2), c.p(x + w - .6f, y + h - 18), color, width, 12);
         }
-        c.line(x + 13, y + .6f, x + w * .27f, y + .6f, IM_COL32(167, 24, 46, 190), .85f);
-        c.line(x + w * .6f, y + .6f, x + w - 14, y + .6f, IM_COL32(66, 16, 29, 150), .7f);
-        c.line(x + 16, y + h - .6f, x + w * .42f, y + h - .6f, IM_COL32(110, 16, 37, 180), .7f);
-        c.line(x + 4, y + 19, x + 4, y + 31, IM_COL32(104, 14, 36, 125), .65f);
-        movingRim(c, x, y, w, h, r, IM_COL32(231, 13, 52, 255));
+        c.line(x + 13, y + .6f, x + w * .27f, y + .6f, IM_COL32(20, 80, 167, 190), .85f);
+        c.line(x + w * .6f, y + .6f, x + w - 14, y + .6f, IM_COL32(7, 31, 66, 150), .7f);
+        c.line(x + 16, y + h - .6f, x + w * .42f, y + h - .6f, IM_COL32(13, 52, 110, 180), .7f);
+        c.line(x + 4, y + 19, x + 4, y + 31, IM_COL32(12, 49, 104, 125), .65f);
+        movingRim(c, x, y, w, h, r, IM_COL32(27, 110, 231, 255));
     }
 
     static void homeAction(const Canvas& c, float x, float y, float w, float h) {
@@ -1784,14 +1784,14 @@ namespace CyberMenu {
                                       IM_COL32(32, 9, 16, 255));
         c.dl->AddRect(c.p(x - .8f, y - .8f), c.p(x + w + .8f, y + h + .8f), IM_COL32(5, 5, 8, 230),
                       4 * c.scale, 0, 1 * c.scale);
-        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(80, 12, 29, 195), r * c.scale, 0,
+        c.dl->AddRect(c.p(x, y), c.p(x + w, y + h), IM_COL32(9, 38, 80, 195), r * c.scale, 0,
                       .85f * c.scale);
-        c.dl->AddRect(c.p(x + 1.5f, y + 1.5f), c.p(x + w - 1.5f, y + h - 1.5f), IM_COL32(119, 13, 36, 95),
+        c.dl->AddRect(c.p(x + 1.5f, y + 1.5f), c.p(x + w - 1.5f, y + h - 1.5f), IM_COL32(14, 57, 119, 95),
                       1.8f * c.scale, 0, .65f * c.scale);
-        c.line(x + 7, y + 2, x + w - 7, y + 2, IM_COL32(132, 16, 38, 90), .6f);
-        c.line(x + 7, y + h - 1, x + w - 7, y + h - 1, IM_COL32(69, 10, 27, 155), .7f);
-        c.line(x + 2, y + 6, x + 2, y + h - 6, IM_COL32(151, 13, 40, 105), .65f);
-        movingRim(c, x, y, w, h, r, IM_COL32(220, 11, 48, 255));
+        c.line(x + 7, y + 2, x + w - 7, y + 2, IM_COL32(15, 63, 132, 90), .6f);
+        c.line(x + 7, y + h - 1, x + w - 7, y + h - 1, IM_COL32(8, 33, 69, 155), .7f);
+        c.line(x + 2, y + 6, x + 2, y + h - 6, IM_COL32(18, 72, 151, 105), .65f);
+        movingRim(c, x, y, w, h, r, IM_COL32(26, 105, 220, 255));
     }
 
     static void statusTile(const Canvas& c, float x, float y, float w, const char* title, const char* value,
@@ -1836,7 +1836,7 @@ namespace CyberMenu {
 
     static void openChannel() {
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSURL* url = [NSURL URLWithString:@"https://t.me/hmoodhack"];
+            NSURL* url = [NSURL URLWithString:@"https://t.me/wolf_ios"];
             [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
         });
     }
@@ -1861,7 +1861,7 @@ namespace CyberMenu {
         c.dl->AddRectFilledMultiColor(c.p(17, 59), c.p(335, 64), IM_COL32(28, 6, 13, 150),
                                       IM_COL32(31, 6, 14, 150), IM_COL32(12, 8, 12, 0),
                                       IM_COL32(12, 8, 12, 0));
-        homeText(c, 28, 31, "HMOOD VIP", 17.5f, White, 274);
+        homeText(c, 28, 31, "WOLF", 17.5f, White, 274);
          
         c.dl->AddCircleFilled(c.p(308.5f, 39.5f), 9 * c.scale, IM_COL32(0, 235, 126, 14), 28);
         c.dl->AddCircleFilled(c.p(308.5f, 39.5f), 7.5f * c.scale, IM_COL32(0, 235, 126, 24), 28);
@@ -1870,16 +1870,16 @@ namespace CyberMenu {
          
         c.line(337.4f, 160, 337.4f, 224, IM_COL32(6, 5, 9, 235), 1.f);
         for (int pass = 0; pass < 3; ++pass) {
-            const ImU32 edge = pass == 0   ? IM_COL32(226, 7, 44, 16)
-                               : pass == 1 ? IM_COL32(216, 10, 43, 55)
-                                           : IM_COL32(192, 16, 44, 210);
+            const ImU32 edge = pass == 0   ? IM_COL32(27, 108, 226, 16)
+                               : pass == 1 ? IM_COL32(25, 103, 216, 55)
+                                           : IM_COL32(23, 92, 192, 210);
             const float width = pass == 0 ? 5.f : pass == 1 ? 2.6f : .85f;
             c.line(339.3f, 168, 339.3f, 225, edge, width);
             c.dl->AddBezierCubic(c.p(339.3f, 225), c.p(339.3f, 232), c.p(338, 233.3f), c.p(330, 233.3f), edge,
                                  width * c.scale, 16);
             c.line(315, 233.3f, 330, 233.3f, edge, width);
         }
-        c.line(339.3f, 145, 339.3f, 168, IM_COL32(115, 12, 35, 155), .7f);
+        c.line(339.3f, 145, 339.3f, 168, IM_COL32(13, 55, 115, 155), .7f);
         statusTile(c, 27, 68, 296, "SERVER", "NOT CONFIGURED", Muted, -1);
         statusTile(c, 27, 120, 141, "FPS", fps, HomeCyan, Gauge);
         statusTile(c, 183, 120, 140, "LICENSE", "UNAVAILABLE", Muted, Shield);
@@ -1911,7 +1911,7 @@ namespace CyberMenu {
         homePanel(c, 212, 263, 184, 96);
         homePanel(c, 407, 263, 188, 96);
         c.dl->AddCircleFilled(c.p(27, 278), 3.3f * c.scale, Green, 18);
-        homeText(c, 40, 270, "HMOOD VIP", 12.5f, Red, 148);
+        homeText(c, 40, 270, "WOLF", 12.5f, Red, 148);
         homeText(c, 27, 305, st.device.c_str(), 14, White, 160);
         homeText(c, 27, 333, (std::string(MenuLocale::tr("OS")) + " iOS " + st.ios).c_str(), 11.5f, IM_COL32(154, 139, 90, 255),
                  161);
@@ -2145,7 +2145,7 @@ namespace CyberMenu {
             }
             const bool selected = triggerMode == i;
             c.dl->AddCircle(c.p(x - 14, y + 10), 7 * c.scale,
-                           selected ? Red : IM_COL32(96, 38, 50, 255), 24, 1.2f * c.scale);
+                           selected ? Red : IM_COL32(11, 46, 96, 255), 24, 1.2f * c.scale);
             if (selected) c.dl->AddCircleFilled(c.p(x - 14, y + 10), 4.5f * c.scale, Red, 24);
             c.text(x, y, triggers[i], 18, selected ? White : Muted, 126);
         }
