@@ -13,7 +13,7 @@ jobs:
 
       - name: Build project
         run: |
-          cd "FUCK S0N_MX BY HMOOD"
+          cd "HMOOD"
           SCHEME=$(xcodebuild -list -json | jq -r '.project.schemes[0]')
           echo "Building scheme: $SCHEME"
           xcodebuild -project HMOOD_FUCK_MAX.xcodeproj -scheme "$SCHEME" -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO -derivedDataPath ./build
